@@ -4,7 +4,7 @@ import pygame
 import numpy as np
 import math_util
 
-import globals
+import globals_
 import os
 
 vec2 = pygame.math.Vector2
@@ -12,7 +12,7 @@ vec2 = pygame.math.Vector2
 
 class Game:
   def __init__(self):
-    track_img = pyglet.image.load(os.path.join(globals.image_path, "track_straight.png"))
+    track_img = pyglet.image.load(os.path.join(globals_.image_path, "track_straight.png"))
     self.track_sprite = pyglet.sprite.Sprite(track_img, x=0, y=0)
 
     self.car = Car()
@@ -31,7 +31,7 @@ class Game:
 
 class Car:
   def __init__(self):
-    car_img = pyglet.image.load(os.path.join(globals.image_path, "car.png"))
+    car_img = pyglet.image.load(os.path.join(globals_.image_path, "car.png"))
     self.car_sprite = pyglet.sprite.Sprite(car_img, x=0, y=0)
 
     self.init_x = (globals.display_width / 2)

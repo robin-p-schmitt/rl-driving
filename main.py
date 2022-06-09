@@ -2,7 +2,7 @@ import pyglet
 from pyglet.window import key
 
 from game import Game
-from globals import display_width, display_height
+from globals_ import display_width, display_height
 
 frame_rate = 30.
 

@@ -1,5 +1,5 @@
 import numpy as np
-from globals import *
+from globals_ import *
 
 
 def get_angle(vec: vec2):
