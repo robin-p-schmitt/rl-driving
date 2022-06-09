@@ -17,7 +17,11 @@ def line_line_collision(x1, y1, x2, y2, x3, y3, x4, y4):
     u_a_nom = -u_a_nom
     u_b_nom = -u_b_nom
 
-  if 0.0 < u_a_nom < denom and 0.0 < u_b_nom < denom:
-    return True
+  intersection = None
+  if denom != 0:
+    intersection = vec2(x=x1 + (u_a_nom / denom * (x2 - x1)), y=y1 + (u_a_nom / denom * (y2 - y1)))
 
-  return False
+  if 0.0 < u_a_nom < denom and 0.0 < u_b_nom < denom:
+    return True, intersection
+
+  return False, None

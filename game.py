@@ -17,17 +17,41 @@ class Game:
 
     self.car = Car()
     self.walls = self.add_walls()
+    self.state = self.get_state()
+    self.state_size = len(self.state)
+    self.action_size = 9
 
   def add_walls(self):
     return [
       Wall(765, 0, 765, globals_.display_height, self.car), Wall(1035, 0, 1035, globals_.display_height, self.car)
     ]
 
+  def show_lidar(self):
+    for wall in self.walls:
+      for lidar in self.car.lidar:
+        lidar.draw()
+        coll, inters = math_util.line_line_collision(
+          wall.x1, wall.y1, wall.x2, wall.y2, lidar.x, lidar.y, lidar.x2, lidar.y2)
+        if coll and inters is not None:
+          pyglet.shapes.Circle(*inters, radius=10).draw()
+
+  def get_state(self):
+    state = [-1 for i in range(len(self.car.lidar))]
+    for wall in self.walls:
+      for i, lidar in enumerate(self.car.lidar):
+        coll, inters = math_util.line_line_collision(
+          wall.x1, wall.y1, wall.x2, wall.y2, lidar.x, lidar.y, lidar.x2, lidar.y2)
+        if coll and inters is not None:
+          state[i] = np.sqrt(np.square(lidar.x-inters.x) + np.square(lidar.y-inters.y))
+
+    return state
+
   def render(self):
     glPushMatrix()
 
     self.track_sprite.draw()
     self.car.show()
+    # self.show_lidar()
 
     glPopMatrix()
 
@@ -35,6 +59,7 @@ class Game:
     self.car.update(dt)
     for wall in self.walls:
       wall.update()
+    self.state = self.get_state()
 
 
 class Car:
@@ -66,6 +91,8 @@ class Car:
     self.angle = 0
     self.steering_angle = 0
 
+    self.lidar = self.get_lidar()
+
     self.car_sprite.update(x=self.position.x, y=self.position.y, rotation=90)
 
   def reset(self):
@@ -82,8 +109,17 @@ class Car:
     self.friction = 2
     self.angle = 0
     self.steering_angle = 0
+    self.life_time = 0
 
     self.car_sprite.update(x=self.position.x, y=self.position.y, rotation=90)
+    self.lidar = self.get_lidar()
+
+  def get_lidar(self):
+    lidar_pos = self.position + self.direction * self.height / 2
+    return [
+      pyglet.shapes.Line(*lidar_pos, *self.position + self.direction.rotate((360 / 6) * i) * 500)
+      for i in range(6)
+    ]
 
   def get_bounding_box(self):
     """
@@ -149,6 +185,7 @@ class Car:
 
   def move(self):
     self.position += self.direction * self.velocity
+    self.lidar = self.get_lidar()
 
 
 class Wall:
@@ -165,7 +202,7 @@ class Wall:
 
   def update(self):
     for corner1, corner2 in self.car.get_bounding_box():
-      coll = math_util.line_line_collision(
+      coll, _ = math_util.line_line_collision(
         self.x1, self.y1, self.x2, self.y2,
         corner1.x, corner1.y, corner2.x, corner2.y)
       if coll:
