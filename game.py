@@ -7,24 +7,29 @@ import math_util
 import globals_
 import os
 
+from svgpathtools import svg2paths
+
 vec2 = pygame.math.Vector2
 
 
 class Game:
-  def __init__(self):
-    track_img = pyglet.image.load(os.path.join(globals_.image_path, "track_straight.png"))
+  def __init__(self, track_idx):
+    track_img = pyglet.image.load(os.path.join(globals_.image_path, "track%d.png" % track_idx))
     self.track_sprite = pyglet.sprite.Sprite(track_img, x=0, y=0)
 
     self.car = Car()
-    self.walls = self.add_walls()
+    self.walls = self.load_walls(track_idx=track_idx)
     self.state = self.get_state()
     self.state_size = len(self.state)
     self.action_size = 9
 
-  def add_walls(self):
-    return [
-      Wall(765, 0, 765, globals_.display_height, self.car), Wall(1035, 0, 1035, globals_.display_height, self.car)
-    ]
+  def load_walls(self, track_idx):
+    walls_svg_file = os.path.join(globals_.image_path, "track%d_walls.svg" % track_idx)
+    paths, attr = svg2paths(walls_svg_file)
+    walls = [
+      Wall(bezier.start.real, bezier.start.imag, bezier.end.real, bezier.end.imag, self.car) for bezier in paths[0]]
+
+    return walls
 
   def show_lidar(self):
     for wall in self.walls:

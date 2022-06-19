@@ -16,7 +16,7 @@ class MyWindow(pyglet.window.Window):
     background_color = [i/255 for i in background_color]
     pyglet.gl.glClearColor(*background_color)
 
-    self.game = Game()
+    self.game = Game(track_idx=1)
     self.car = self.game.car
 
   def on_key_press(self, symbol, modifiers):
