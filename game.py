@@ -46,6 +46,44 @@ class Game:
 
     return state
 
+  def is_episode_finished(self):
+    return self.car.is_dead
+
+  def reset(self):
+    self.car.reset()
+
+  def make_action(self, action, dt):
+    if action == 0:
+      self.car.is_accelerating = True
+    if action == 2:
+      self.car.is_reversing = True
+    if action == 3:
+      self.car.is_turning_right = True
+    if action == 4:
+      self.car.is_turning_left = True
+    if action == 5:
+      self.car.is_accelerating = False
+    if action == 6:
+      self.car.is_reversing = False
+    if action == 7:
+      self.car.is_turning_right = False
+    if action == 8:
+      self.car.is_turning_left = False
+
+    self.update(dt=dt)
+
+    base_reward = 1
+    if abs(self.car.velocity) > 2:
+      reward = base_reward * abs(self.car.velocity)
+    elif abs(self.car.velocity) > 1:
+      reward = -2
+    else:
+      reward = -50
+
+    reward += self.car.life_time * 0.1
+
+    return reward
+
   def render(self):
     glPushMatrix()
 
@@ -90,6 +128,7 @@ class Car:
     self.friction = 2
     self.angle = 0
     self.steering_angle = 0
+    self.life_time = 0
 
     self.lidar = self.get_lidar()
 
@@ -158,6 +197,7 @@ class Car:
     self.car_sprite.draw()
 
   def update(self, dt):
+    self.life_time += 1
     self.update_controls(dt)
     self.move()
 
