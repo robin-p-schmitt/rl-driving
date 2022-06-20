@@ -24,7 +24,7 @@ class QLearning:
     self.batch_size = 16
     self.target_update = 25
 
-    self.experiences = []
+    self.replay_buffer = ReplayBuffer(max_size=1000)
     self.max_exps = 200
 
     self.n_updates = 0
@@ -59,13 +59,11 @@ class QLearning:
       self.total_reward = 0
 
     # add to experiences
-    self.experiences.append(Experience(cur_state, cur_action, next_state, reward))
-    if len(self.experiences) > self.max_exps * 2:
-      self.experiences = self.experiences[self.max_exps:]
+    self.replay_buffer.add_experience(cur_state, cur_action, next_state, reward)
 
-    if len(self.experiences) >= self.batch_size * 4:
-      sample_exps = random.sample(self.experiences, self.batch_size)
-      batch = Experience(*zip(*sample_exps))
+    if self.replay_buffer.can_provide_sample(self.batch_size):
+      sample_exps = self.replay_buffer.get_sample(self.batch_size)
+      batch = list(zip(*sample_exps))
       cur_states, cur_actions, next_states, rewards = [np.asarray(batch[i]) for i in range(len(batch))]
 
       targets = rewards + self.gamma * np.max(self.policy_net(np.atleast_2d(next_states)), axis=1)
@@ -116,3 +114,30 @@ class DeepQNetwork(keras.Model):
     x = self.dense2(x)
     output = self.output_layer(x)
     return output
+
+
+class ReplayBuffer:
+  def __init__(self, max_size):
+    self.experiences = np.empty(shape=(0, 4))
+    self.weights = np.array([])
+    self.max_size = max_size
+
+  def add_experience(self, cur_state, cur_action, next_state, reward):
+    self.experiences = np.append(self.experiences, [[cur_state, cur_action, next_state, reward]], axis=0)
+    self.weights = np.append(self.weights, [1.])
+
+    if len(self.weights) > self.max_size:
+      temp_exps, temp_weights = zip(*sorted(zip(self.experiences, self.weights), key=lambda x: x[1], reverse=True))
+      self.experiences = np.array(temp_exps[:self.max_size])
+      self.weights = np.array(temp_weights[:self.max_size])
+
+  def can_provide_sample(self, batch_size):
+    if len(self.experiences) >= batch_size:
+      return True
+    return False
+
+  def get_sample(self, batch_size):
+    rnd_indices = np.random.choice(
+      range(len(self.experiences)), size=batch_size, replace=False, p=tf.nn.softmax(self.weights, axis=-1))
+    self.weights[rnd_indices] /= 2.
+    return self.experiences[rnd_indices]
