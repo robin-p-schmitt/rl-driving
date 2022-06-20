@@ -3,7 +3,7 @@ import keras
 import keras.layers as kl
 
 import numpy as np
-import random
+import os
 
 from collections import namedtuple
 
@@ -12,7 +12,7 @@ Experience = namedtuple("Experience", ["cur_state", "cur_action", "next_state", 
 
 
 class QLearning:
-  def __init__(self, game):
+  def __init__(self, game, load_after_n_updates=None):
     self.game = game
 
     self.lr = 0.0001
@@ -25,11 +25,19 @@ class QLearning:
     self.target_update = 25
 
     self.replay_buffer = ReplayBuffer(max_size=1000)
-    self.max_exps = 200
+    self.save_interval = 5000
+
 
     self.n_updates = 0
     self.total_loss = 0
     self.total_reward = 0
+
+    if load_after_n_updates is not None:
+      if "model_%d.index" % load_after_n_updates in os.listdir("checkpoints"):
+        self.policy_net.load_weights("checkpoints/model_%d" % load_after_n_updates)
+        self.target_net.load_weights("checkpoints/model_%d" % load_after_n_updates)
+      else:
+        print("Checkpoint does not exist, initializing randomly instead")
 
     print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
@@ -90,10 +98,13 @@ class QLearning:
       if self.n_updates % self.target_update == 0:
         self.update_target_weights()
 
-  def test(self):
+      if self.n_updates % self.save_interval == 0:
+        print("SAVE MODEL")
+        self.target_net.save_weights("checkpoints/model_%d" % self.n_updates)
+
+  def test(self, dt):
     next_action = np.argmax(self.target_net(np.atleast_2d(self.game.get_state())))
-    self.game.make_action(next_action)
-    print(next_action)
+    self.game.make_action(next_action, dt)
 
 
 class DeepQNetwork(keras.Model):
