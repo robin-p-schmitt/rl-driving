@@ -23,6 +23,9 @@ class QLearning:
     self.optimizer = tf.optimizers.Adam(self.lr)
     self.batch_size = 16
     self.target_update = 25
+    self.min_explore_rate = 0.01
+    self.max_explore_rate = 1.
+    self.explore_decay_rate = 0.00001
 
     self.replay_buffer = ReplayBuffer(max_size=1000)
     self.save_interval = 5000
@@ -47,8 +50,12 @@ class QLearning:
 
   def train(self, dt):
     cur_state = self.game.get_state()
+
+    # start with high exploration rate and then gradually let it decay
+    explore_rate = self.min_explore_rate + (self.max_explore_rate - self.min_explore_rate) * np.exp(
+      -self.explore_decay_rate * self.n_updates)
     # choose action
-    if np.random.rand() < 0.05:
+    if np.random.rand() < explore_rate:
       cur_action = np.random.randint(0, self.game.action_size, size=None)
     else:
       cur_action = np.argmax(self.policy_net(np.atleast_2d(cur_state)))
