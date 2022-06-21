@@ -122,9 +122,11 @@ class Car:
     self.init_x = (globals_.display_width / 2)
     self.init_y = 200
 
-    self.turning_rate = 1.
-    self.max_velocitiy = 7
-    self.max_rev_velocitiy = -4
+    self.turning_rate = 1.3
+    self.friction = 0.94
+    self.acceleration = 1000.
+    self.max_velocitiy = 400
+    self.max_rev_velocitiy = -220
 
     self.is_accelerating = False
     self.is_reversing = False
@@ -133,12 +135,9 @@ class Car:
     self.is_dead = False
 
     self.position = vec2(x=self.init_x, y=self.init_y)
-    self.acceleration = 4.
     self.velocity = 0
     self.direction = vec2(x=0, y=1)
-    self.friction = 2
     self.angle = 0
-    self.steering_angle = 0
     self.life_time = 0
 
     self.lidar = self.get_lidar()
@@ -210,10 +209,10 @@ class Car:
   def update(self, dt):
     self.life_time += 1
     self.update_controls(dt)
-    self.move()
+    self.move(dt)
 
   def update_controls(self, dt):
-    multiplier = self.velocity / 4
+    multiplier = self.velocity / 130
 
     if self.is_accelerating:
       self.velocity += self.acceleration * dt
@@ -222,11 +221,8 @@ class Car:
       self.velocity -= self.acceleration * dt
       self.velocity = max(self.velocity, self.max_rev_velocitiy)
     else:
-      if self.velocity > 0:
-        self.velocity -= self.friction * dt
-      elif self.velocity < 0:
-        self.velocity += self.friction * dt
-      else:
+      self.velocity *= self.friction
+      if abs(self.velocity) < .5:
         self.velocity = 0
 
     if self.is_turning_right:
@@ -234,8 +230,8 @@ class Car:
     elif self.is_turning_left:
       self.direction = self.direction.rotate(self.turning_rate * multiplier)
 
-  def move(self):
-    self.position += self.direction * self.velocity
+  def move(self, dt):
+    self.position += self.direction * self.velocity * dt
     self.lidar = self.get_lidar()
 
 
