@@ -41,13 +41,19 @@ class Game:
           pyglet.shapes.Circle(*inters, radius=10).draw()
 
   def get_state(self):
+    # first part of the state is the distance from any lidar beam to a wall
     state = [-1 for i in range(len(self.car.lidar))]
     for wall in self.walls:
       for i, lidar in enumerate(self.car.lidar):
         coll, inters = math_util.line_line_collision(
           wall.x1, wall.y1, wall.x2, wall.y2, lidar.x, lidar.y, lidar.x2, lidar.y2)
         if coll and inters is not None:
-          state[i] = np.sqrt(np.square(lidar.x-inters.x) + np.square(lidar.y-inters.y))
+          dist = np.sqrt(np.square(lidar.x-inters.x) + np.square(lidar.y-inters.y))
+          if state[i] == -1 or state[i] > dist:
+            state[i] = dist
+
+    # add current velocity to state
+    state.append(self.car.velocity)
 
     return state
 
