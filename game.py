@@ -49,11 +49,14 @@ class Game:
           wall.x1, wall.y1, wall.x2, wall.y2, lidar.x, lidar.y, lidar.x2, lidar.y2)
         if coll and inters is not None:
           dist = np.sqrt(np.square(lidar.x-inters.x) + np.square(lidar.y-inters.y))
-          if state[i] == -1 or state[i] > dist:
-            state[i] = dist
+          norm_dist = dist / self.car.lidar_range
+          if state[i] == -1 or state[i] > norm_dist:
+            state[i] = norm_dist
 
     # add current velocity to state
-    state.append(self.car.velocity)
+    norm_forw_velocity = max(0.0, self.car.velocity / self.car.max_velocitiy)
+    norm_backw_velocity = max(0.0, self.car.velocity / self.car.max_rev_velocitiy)
+    state += [norm_forw_velocity, norm_backw_velocity]
 
     return state
 
