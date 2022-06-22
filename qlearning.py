@@ -63,9 +63,11 @@ class QLearning:
     reward = self.game.make_action(cur_action)
     next_state = self.game.get_state()
 
+    is_dead = False
     # if episode finished -> car is dead -> punish the ai
     if self.game.is_episode_finished():
-      reward = -100
+      is_dead = True
+      reward = -2000
 
     self.total_reward += reward
 
@@ -74,14 +76,15 @@ class QLearning:
       self.total_reward = 0
 
     # add to experiences
-    self.replay_buffer.add_experience(cur_state, cur_action, next_state, reward)
+    self.replay_buffer.add_experience(cur_state, cur_action, next_state, reward, is_dead)
 
     if self.replay_buffer.can_provide_sample(self.batch_size):
       sample_exps = self.replay_buffer.get_sample(self.batch_size)
       batch = list(zip(*sample_exps))
-      cur_states, cur_actions, next_states, rewards = [np.asarray(batch[i]) for i in range(len(batch))]
+      cur_states, cur_actions, next_states, rewards, is_deads = [np.asarray(batch[i]) for i in range(len(batch))]
 
       targets = rewards + self.gamma * np.max(self.target_net(np.atleast_2d(next_states)), axis=1)
+      targets[is_deads] = rewards[is_deads]
       targets = tf.convert_to_tensor(targets, dtype="float32")
 
       # calculate loss
@@ -136,12 +139,12 @@ class DeepQNetwork(keras.Model):
 
 class ReplayBuffer:
   def __init__(self, max_size):
-    self.experiences = np.empty(shape=(0, 4))
+    self.experiences = np.empty(shape=(0, 5))
     self.weights = np.array([])
     self.max_size = max_size
 
-  def add_experience(self, cur_state, cur_action, next_state, reward):
-    self.experiences = np.append(self.experiences, [[cur_state, cur_action, next_state, reward]], axis=0)
+  def add_experience(self, cur_state, cur_action, next_state, reward, is_dead):
+    self.experiences = np.append(self.experiences, [[cur_state, cur_action, next_state, reward, is_dead]], axis=0)
     self.weights = np.append(self.weights, [1.])
 
     if len(self.weights) > self.max_size:
