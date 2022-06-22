@@ -81,7 +81,7 @@ class QLearning:
       batch = list(zip(*sample_exps))
       cur_states, cur_actions, next_states, rewards = [np.asarray(batch[i]) for i in range(len(batch))]
 
-      targets = rewards + self.gamma * np.max(self.policy_net(np.atleast_2d(next_states)), axis=1)
+      targets = rewards + self.gamma * np.max(self.target_net(np.atleast_2d(next_states)), axis=1)
       targets = tf.convert_to_tensor(targets, dtype="float32")
 
       # calculate loss
