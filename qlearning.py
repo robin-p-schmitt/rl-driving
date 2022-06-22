@@ -48,7 +48,7 @@ class QLearning:
     for policy_var, target_var in zip(self.policy_net.trainable_variables, self.target_net.trainable_variables):
       target_var.assign(policy_var.numpy())
 
-  def train(self, dt):
+  def train(self):
     cur_state = self.game.get_state()
 
     # start with high exploration rate and then gradually let it decay
@@ -60,7 +60,7 @@ class QLearning:
     else:
       cur_action = np.argmax(self.policy_net(np.atleast_2d(cur_state)))
 
-    reward = self.game.make_action(cur_action, dt)
+    reward = self.game.make_action(cur_action)
     next_state = self.game.get_state()
 
     # if episode finished -> car is dead -> punish the ai
@@ -109,9 +109,9 @@ class QLearning:
         print("SAVE MODEL")
         self.target_net.save_weights("checkpoints/model_%d" % self.n_updates)
 
-  def test(self, dt):
+  def test(self):
     next_action = np.argmax(self.target_net(np.atleast_2d(self.game.get_state())))
-    self.game.make_action(next_action, dt)
+    self.game.make_action(next_action)
 
 
 class DeepQNetwork(keras.Model):

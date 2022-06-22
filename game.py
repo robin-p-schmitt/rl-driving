@@ -66,7 +66,7 @@ class Game:
   def reset(self):
     self.car.reset()
 
-  def make_action(self, action, dt):
+  def make_action(self, action):
     if action == 0:
       self.car.is_accelerating = True
     if action == 2:
@@ -84,7 +84,7 @@ class Game:
     if action == 8:
       self.car.is_turning_left = False
 
-    self.update(dt=dt)
+    self.update()
 
     base_reward = 1
     if abs(self.car.velocity) > 2:
