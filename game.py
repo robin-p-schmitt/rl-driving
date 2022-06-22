@@ -54,8 +54,8 @@ class Game:
             state[i] = norm_dist
 
     # add current velocity to state
-    norm_forw_velocity = max(0.0, self.car.velocity / self.car.max_velocitiy)
-    norm_backw_velocity = max(0.0, self.car.velocity / self.car.max_rev_velocitiy)
+    norm_forw_velocity = max(0.0, self.car.velocity / self.car.max_velocity)
+    norm_backw_velocity = max(0.0, self.car.velocity / self.car.max_rev_velocity)
     state += [norm_forw_velocity, norm_backw_velocity]
 
     return state
@@ -107,8 +107,8 @@ class Game:
 
     glPopMatrix()
 
-  def update(self, dt):
-    self.car.update(dt)
+  def update(self):
+    self.car.update()
     for wall in self.walls:
       wall.update()
     self.state = self.get_state()
@@ -125,11 +125,12 @@ class Car:
     self.init_x = (globals_.display_width / 2)
     self.init_y = 200
 
-    self.turning_rate = 1.3
+    self.turning_rate = 0.4
     self.friction = 0.94
-    self.acceleration = 1000.
-    self.max_velocitiy = 400
-    self.max_rev_velocitiy = -220
+    self.acceleration = 6.
+    self.max_velocity = 12
+    self.max_rev_velocity = -8
+    self.lidar_range = 500
 
     self.is_accelerating = False
     self.is_reversing = False
@@ -209,20 +210,20 @@ class Car:
       rotation=-math_util.get_angle(self.direction) + 90)
     self.car_sprite.draw()
 
-  def update(self, dt):
+  def update(self):
     self.life_time += 1
-    self.update_controls(dt)
-    self.move(dt)
+    self.update_controls()
+    self.move()
 
-  def update_controls(self, dt):
-    multiplier = self.velocity / 130
+  def update_controls(self):
+    multiplier = self.velocity
 
     if self.is_accelerating:
-      self.velocity += self.acceleration * dt
-      self.velocity = min(self.velocity, self.max_velocitiy)
+      self.velocity += self.acceleration
+      self.velocity = min(self.velocity, self.max_velocity)
     elif self.is_reversing:
-      self.velocity -= self.acceleration * dt
-      self.velocity = max(self.velocity, self.max_rev_velocitiy)
+      self.velocity -= self.acceleration
+      self.velocity = max(self.velocity, self.max_rev_velocity)
     else:
       self.velocity *= self.friction
       if abs(self.velocity) < .5:
@@ -233,8 +234,8 @@ class Car:
     elif self.is_turning_left:
       self.direction = self.direction.rotate(self.turning_rate * multiplier)
 
-  def move(self, dt):
-    self.position += self.direction * self.velocity * dt
+  def move(self):
+    self.position += self.direction * self.velocity
     self.lidar = self.get_lidar()
 
 

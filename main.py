@@ -51,10 +51,10 @@ class MyWindow(pyglet.window.Window):
 
   def update(self, dt):
     if self.train:
-      self.qlearning.train(dt)
+      self.qlearning.train()
     else:
-      self.qlearning.test(dt)
-    # self.game.update(dt)
+      self.qlearning.test()
+    # self.game.update()
     if self.game.is_episode_finished():
       self.game.reset()
 
