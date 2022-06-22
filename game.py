@@ -143,6 +143,7 @@ class Car:
     self.direction = vec2(x=0, y=1)
     self.angle = 0
     self.life_time = 0
+    self.reward = 0
 
     self.lidar = self.get_lidar()
 
@@ -156,13 +157,12 @@ class Car:
     self.is_dead = False
 
     self.position = vec2(x=self.init_x, y=self.init_y)
-    self.acceleration = 4.
     self.velocity = 0
     self.direction = vec2(x=0, y=1)
-    self.friction = 2
     self.angle = 0
-    self.steering_angle = 0
     self.life_time = 0
+    # print("TOTAL REWARD: ", self.reward)
+    self.reward = 0
 
     self.car_sprite.update(x=self.position.x, y=self.position.y, rotation=90)
     self.lidar = self.get_lidar()
@@ -170,7 +170,7 @@ class Car:
   def get_lidar(self):
     lidar_pos = self.position + self.direction * self.height / 2
     return [
-      pyglet.shapes.Line(*lidar_pos, *self.position + self.direction.rotate((360 / 6) * i) * 500)
+      pyglet.shapes.Line(*lidar_pos, *self.position + self.direction.rotate((360 / 6) * i) * self.lidar_range)
       for i in range(6)
     ]
 
