@@ -6,6 +6,7 @@ import math_util
 
 import globals_
 import os
+import json
 
 from svgpathtools import svg2paths
 
@@ -24,10 +25,12 @@ class Game:
     self.action_size = 9
 
   def load_walls(self, track_idx):
-    walls_svg_file = os.path.join(globals_.image_path, "track%d_walls.svg" % track_idx)
-    paths, attr = svg2paths(walls_svg_file)
-    walls = [
-      Wall(bezier.start.real, bezier.start.imag, bezier.end.real, bezier.end.imag, self.car) for bezier in paths[0]]
+    walls_json_file = os.path.join(globals_.image_path, "track%d_walls.json" % track_idx)
+    with open(walls_json_file) as f:
+      data = json.load(f)
+      walls = [
+        Wall(*position, self.car) for position in data["walls"]
+      ]
 
     return walls
 
