@@ -15,23 +15,22 @@ class QLearning:
   def __init__(self, game, load_after_n_updates=None):
     self.game = game
 
-    self.lr = 0.0001
+    self.lr = 0.00025
     self.gamma = 0.9
 
     self.policy_net = DeepQNetwork(state_size=self.game.state_size, action_size=self.game.action_size)
     self.target_net = DeepQNetwork(state_size=self.game.state_size, action_size=self.game.action_size)
     self.optimizer = tf.optimizers.Adam(self.lr)
-    self.batch_size = 16
-    self.target_update = 25
+    self.batch_size = 64
+    self.target_update = 10000
     self.min_explore_rate = 0.01
     self.max_explore_rate = 1.
     self.explore_decay_rate = 0.00001
 
-    self.replay_buffer = ReplayBuffer(max_size=1000)
+    self.replay_buffer = ReplayBuffer(max_size=10000)
     self.save_interval = 5000
 
-
-    self.n_updates = 0
+    self.n_updates = load_after_n_updates if load_after_n_updates is not None else 0
     self.total_loss = 0
     self.total_reward = 0
 
