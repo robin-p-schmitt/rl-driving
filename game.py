@@ -70,22 +70,33 @@ class Game:
     self.car.reset()
 
   def make_action(self, action):
+    self.car.is_accelerating = False
+    self.car.is_reversing = False
+    self.car.is_turning_right = False
+    self.car.is_turning_left = False
+
     if action == 0:
       self.car.is_accelerating = True
-    if action == 2:
+    elif action == 1:
       self.car.is_reversing = True
-    if action == 3:
+    elif action == 2:
       self.car.is_turning_right = True
-    if action == 4:
+    elif action == 3:
       self.car.is_turning_left = True
-    if action == 5:
-      self.car.is_accelerating = False
-    if action == 6:
-      self.car.is_reversing = False
-    if action == 7:
-      self.car.is_turning_right = False
-    if action == 8:
-      self.car.is_turning_left = False
+    elif action == 4:
+      self.car.is_accelerating = True
+      self.car.is_turning_right = True
+    elif action == 5:
+      self.car.is_accelerating = True
+      self.car.is_turning_left = True
+    elif action == 6:
+      self.car.is_reversing = True
+      self.car.is_turning_right = True
+    elif action == 7:
+      self.car.is_reversing = True
+      self.car.is_turning_left = True
+    elif action == 8:
+      pass
 
     self.update()
 
