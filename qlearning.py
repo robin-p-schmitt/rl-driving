@@ -158,6 +158,6 @@ class ReplayBuffer:
 
   def get_sample(self, batch_size):
     rnd_indices = np.random.choice(
-      range(len(self.experiences)), size=batch_size, replace=False, p=tf.nn.softmax(self.weights, axis=-1))
-    self.weights[rnd_indices] /= 2.
+      range(len(self.experiences)), size=batch_size, replace=False)
+    self.weights[rnd_indices] *= 0.8
     return self.experiences[rnd_indices]
