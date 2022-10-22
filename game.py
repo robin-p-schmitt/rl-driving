@@ -104,13 +104,15 @@ class Game:
     if abs(self.car.velocity) > 2:
       reward = base_reward * abs(self.car.velocity)
     elif abs(self.car.velocity) > 1:
-      reward = -2
+      reward = -1
     else:
-      reward = -50
+      reward = -2
 
-    reward += self.car.life_time * 0.1
+    # reward += self.car.life_time * 0.1
 
-    return reward
+    self.car.reward += reward
+
+    return self.car.reward
 
   def render(self):
     glPushMatrix()
